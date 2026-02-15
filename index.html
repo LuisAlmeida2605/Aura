@@ -3,87 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aura - Baby Blue Final</title>
+    <title>Aura - Edição Final</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <style>
-        :root { 
-            --bg: #f0f8ff; --card: #ffffff; --text: #333; --accent: #89cff0; 
-            --border: #e1effe; --nav: #ffffff; --shadow: rgba(137, 207, 240, 0.2);
-        }
-        .dark-mode { 
-            --bg: #0f172a; --card: #1e293b; --text: #f1f5f9; --border: #334155; 
-            --nav: #0f172a; --shadow: rgba(0, 0, 0, 0.4); --accent: #7dd3fc;
-        }
-        
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; transition: 0.2s; }
+        :root { --bg: #0f172a; --card: #1e293b; --text: #f1f5f9; --accent: #89cff0; --border: #334155; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; transition: 0.2s; }
         body { background: var(--bg); color: var(--text); padding-bottom: 90px; }
         
-        header { padding: 15px 20px; border-bottom: 2px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--bg); z-index: 100; }
+        header { padding: 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; position: sticky; top: 0; background: var(--bg); z-index: 100; }
         .screen { display: none; padding: 15px; max-width: 500px; margin: auto; }
-        .active { display: block; animation: fadeIn 0.3s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .active { display: block; }
         
-        .card { background: var(--card); padding: 20px; border-radius: 25px; box-shadow: 0 8px 20px var(--shadow); margin-bottom: 20px; border: 1px solid var(--border); }
-        .post { background: var(--card); border-radius: 25px; margin-bottom: 25px; overflow: hidden; box-shadow: 0 10px 25px var(--shadow); border: 1px solid var(--border); }
-        .post-header { padding: 12px 15px; display: flex; align-items: center; justify-content: space-between; }
-        .post-header img { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent); }
-        .post img.main-img { width: 100%; display: block; max-height: 500px; object-fit: cover; }
+        .card { background: var(--card); padding: 15px; border-radius: 20px; border: 1px solid var(--border); margin-bottom: 15px; }
+        .post { background: var(--card); border-radius: 20px; margin-bottom: 20px; border: 1px solid var(--border); overflow: hidden; position: relative; }
         
-        .verified { color: #0095f6; font-size: 14px; margin-left: 4px; }
-        .btn-blue { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 15px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; }
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 2px solid var(--border); border-radius: 15px; background: var(--card); color: var(--text); outline: none; }
+        .verified { color: #38bdf8; margin-left: 4px; }
+        button { cursor: pointer; border: none; font-weight: bold; border-radius: 12px; }
+        .btn-blue { background: var(--accent); color: #0f172a; padding: 10px; width: 100%; margin-top: 10px; }
+        .follow-btn { padding: 6px 12px; font-size: 12px; background: var(--accent); color: #0f172a; }
+        .unfollow { background: #334155; color: white; }
         
-        /* Modal (Gaveta) */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; }
-        .modal-content { position: absolute; bottom: 0; width: 100%; background: var(--card); border-radius: 30px 30px 0 0; padding: 25px; max-height: 85%; overflow-y: auto; box-shadow: 0 -5px 20px rgba(0,0,0,0.1); }
-        
-        /* Estilo Comentários */
-        .comm-item { display: flex; gap: 10px; margin-bottom: 15px; align-items: flex-start; }
-        .comm-item img { width: 32px; height: 32px; border-radius: 50%; }
-        .comm-bubble { background: var(--bg); padding: 10px 15px; border-radius: 18px; flex: 1; font-size: 13px; position: relative; }
-        .comm-del { color: #ff6b6b; font-size: 11px; margin-top: 5px; cursor: pointer; display: inline-block; }
+        .del-post { position: absolute; top: 10px; right: 10px; background: rgba(255, 107, 107, 0.2); color: #ff6b6b; padding: 5px 10px; border-radius: 10px; font-size: 12px; cursor: pointer; }
 
-        nav { position: fixed; bottom: 0; width: 100%; background: var(--nav); border-top: 2px solid var(--border); display: flex; justify-content: space-around; padding: 15px; border-radius: 25px 25px 0 0; }
-        .nav-item { cursor: pointer; font-size: 24px; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; }
+        .modal-content { position: absolute; bottom: 0; width: 100%; background: var(--card); border-radius: 25px 25px 0 0; padding: 25px; max-height: 85%; overflow-y: auto; }
+
+        nav { position: fixed; bottom: 0; width: 100%; background: var(--card); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 15px; z-index: 1000; }
+        .nav-item { font-size: 28px; cursor: pointer; }
+        
+        img.post-img { width: 100%; display: block; max-height: 500px; object-fit: cover; border-bottom: 1px solid var(--border); }
     </style>
 </head>
 <body>
 
     <header>
-        <h2 style="color: var(--accent); font-weight: 900;">Aura</h2>
-        <button onclick="Aura.toggleTheme()" style="background:none; border:none; font-size:22px; cursor:pointer">🌓</button>
+        <h2 style="color: var(--accent)">Aura</h2>
+        <div onclick="location.reload()" style="cursor:pointer">🔄</div>
     </header>
 
-    <div id="scrAuth" class="screen active">
-        <div class="card">
-            <h2 style="text-align:center">Entrar ✨</h2>
-            <input type="text" id="uInp" placeholder="Seu nome">
-            <input type="password" id="pInp" placeholder="Sua senha">
-            <button class="btn-blue" onclick="Aura.execAuth()">Acessar</button>
-        </div>
-    </div>
+  <div id="scrAuth" class="screen active">
+    <div class="card" style="padding: 20px;">
+        <h3 style="margin-bottom: 15px; text-align: center;">Entrar na Aura ✨</h3>
+        
+        <input type="text" id="uInp" placeholder="Usuário" style="width:100%; padding:12px; margin-bottom:10px; background:#0f172a; color:white; border:1px solid var(--border); border-radius:10px; display: block;">
+        
+        <input type="password" id="pInp" placeholder="Senha" style="width:100%; padding:12px; margin-bottom:15px; background:#0f172a; color:white; border:1px solid var(--border); border-radius:10px; display: block;">
+        
+        <button class="btn-blue" style="width: 100%; cursor: pointer;" onclick="(async () => {
+            const u = document.getElementById('uInp').value.trim().toLowerCase();
+            const p = document.getElementById('pInp').value.trim();
 
+            if (!u || !p) return alert('Preencha tudo!');
+
+            try {
+                const userRef = db.collection('users').doc(u);
+                const doc = await userRef.get();
+
+                if (doc.exists) {
+                    const dados = doc.data();
+                    if (dados.p && dados.p !== p) {
+                        return alert('Senha incorreta! ❌');
+                    }
+                }
+
+                // Se passou ou é novo, salva a senha e loga
+                await userRef.set({ u, p }, { merge: true });
+                localStorage.setItem('aura_user', u);
+                Aura.user = u;
+                Aura.startApp();
+            } catch (e) {
+                alert('Erro na conexão!');
+            }
+        })()">Acessar Conta</button>
+    </div>
+</div>
+   
     <div id="scrFeed" class="screen">
         <div class="card">
-            <input type="text" id="pTxt" placeholder="No que está pensando?">
-            <input type="file" id="pFile" accept="image/*" style="font-size:11px">
-            <button class="btn-blue" onclick="Aura.newPost()">Postar</button>
+            <input type="text" id="pTxt" placeholder="No que está pensando?" style="width:100%; background:none; border:none; color:white; outline:none; margin-bottom:10px">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <input type="file" id="pFile" accept="image/*" style="font-size: 11px; flex: 1;">
+                <button class="btn-blue" onclick="Aura.newPost()" style="width: auto; padding: 8px 20px; margin: 0;">Postar</button>
+            </div>
         </div>
         <div id="wall"></div>
     </div>
 
     <div id="scrProf" class="screen">
         <div class="card" style="text-align:center">
-            <img id="profImg" style="width:100px; height:100px; border-radius:50%; border:3px solid var(--accent); cursor:pointer" onclick="document.getElementById('pfpFile').click()">
-            <input type="file" id="pfpFile" style="display:none" onchange="Aura.updatePFP(this)">
-            <h2 id="profName" style="margin:10px 0"></h2>
+            <img id="profImg" style="width:100px; height:100px; border-radius:50%; border:3px solid var(--accent); margin-bottom:10px; cursor:pointer; object-fit:cover" onclick="document.getElementById('pfpFile').click()">
+            <input type="file" id="pfpFile" style="display:none" accept="image/*" onchange="Aura.updatePFP(this)">
             
-            <div style="display:flex; justify-content: space-around; margin: 15px 0; background: var(--bg); padding: 10px; border-radius: 15px;">
-                <div onclick="Aura.showSocial('followers')" style="cursor:pointer"><b id="countFollowers">0</b><br><small>Seguidores</small></div>
-                <div onclick="Aura.showSocial('following')" style="cursor:pointer"><b id="countFollowing">0</b><br><small>Seguindo</small></div>
+            <h2 id="profName"></h2>
+            <div style="display:flex; justify-content: space-around; margin: 15px 0; background: #0f172a; padding: 10px; border-radius: 15px;">
+                <div onclick="Aura.showSocial('followers')" style="cursor:pointer">Seguidores<br><b id="cFol">0</b></div>
+                <div onclick="Aura.showSocial('following')" style="cursor:pointer">Seguindo<br><b id="cFlw">0</b></div>
             </div>
-            
             <div id="profAction"></div>
         </div>
         <div id="profWall"></div>
@@ -91,25 +107,22 @@
 
     <div id="mainModal" class="modal" onclick="if(event.target==this) this.style.display='none'">
         <div class="modal-content">
-            <h3 id="modalTitle"></h3>
-            <div id="modalBody" style="margin:15px 0"></div>
-            <div id="commInputArea" style="display:none">
-                <div style="display:flex; gap:10px">
-                    <input type="text" id="newCommTxt" placeholder="Diga algo..." style="flex:1">
-                    <button id="sendCommBtn" style="background:var(--accent); border:none; color:white; border-radius:15px; padding:0 15px">💙</button>
-                </div>
+            <h3 id="modalTitle" style="margin-bottom:15px"></h3>
+            <div id="modalBody"></div>
+            <div id="commArea" style="display:none; margin-top:20px; display:flex; gap:10px">
+                <input type="text" id="newCommTxt" placeholder="Escreva..." style="flex:1; padding:12px; border-radius:10px; background:#0f172a; color:white; border:1px solid var(--border)">
+                <button id="sendCommBtn" style="padding:0 15px; background:var(--accent)">Enviar</button>
             </div>
         </div>
     </div>
 
     <nav id="menu" style="display:none">
-        <span class="nav-item" onclick="Aura.go('scrFeed')">🏠</span>
-        <span class="nav-item" onclick="Aura.go('scrProf', Aura.user)">👤</span>
+        <div class="nav-item" onclick="Aura.go('scrFeed')">🏠</div>
+        <div class="nav-item" onclick="Aura.go('scrProf', Aura.user)">👤</div>
     </nav>
 
     <script>
-        const ADMIN_USER = "luis"; // Altere para seu nome
-
+        const ADMIN_USER = "luis";
         const firebaseConfig = {
             apiKey: "AIzaSyASdswQJmfCG_7MVwbwudHFpx-4zwv6jtg",
             authDomain: "aura-4d3aa.firebaseapp.com",
@@ -125,22 +138,14 @@
             user: localStorage.getItem('aura_user'),
             userCache: {}, following: [], lastPosts: [],
 
-            init() {
-                if(this.user) this.startApp();
-                if(localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
-            },
-
-            toggleTheme() { document.body.classList.toggle('dark-mode'); localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light'); },
+            init() { if(this.user) this.startApp(); },
 
             async execAuth() {
                 const u = document.getElementById('uInp').value.trim().toLowerCase();
-                const p = document.getElementById('pInp').value.trim();
                 if(!u) return;
-                const ref = db.collection("users").doc(u);
-                const doc = await ref.get();
-                if(doc.exists && doc.data().p !== p) return alert("Senha incorreta");
-                if(!doc.exists) await ref.set({ u, p, pfp: "" });
-                this.user = u; localStorage.setItem('aura_user', u); this.startApp();
+                this.user = u; localStorage.setItem('aura_user', u);
+                await db.collection("users").doc(u).set({u}, {merge:true});
+                this.startApp();
             },
 
             startApp() {
@@ -152,15 +157,19 @@
                 this.go('scrFeed');
             },
 
-            listenUsers() {
+            listenUsers() { 
                 db.collection("users").onSnapshot(snap => {
                     snap.forEach(doc => this.userCache[doc.id] = doc.data());
+                    if(document.getElementById('scrProf').classList.contains('active')) {
+                        this.loadProfile(document.getElementById('profName').innerText.replace('@', '').split(' ')[0]);
+                    }
                 });
             },
 
             listenFollows() {
                 db.collection("follows").doc(this.user).onSnapshot(doc => {
                     if(doc.exists) this.following = doc.data().following || [];
+                    this.renderPosts(this.lastPosts, 'wall');
                 });
             },
 
@@ -171,7 +180,7 @@
                 });
             },
 
-            async go(scr, target) {
+            go(scr, target) {
                 document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
                 document.getElementById(scr).classList.add('active');
                 if(scr === 'scrProf') this.loadProfile(target || this.user);
@@ -179,97 +188,132 @@
 
             async loadProfile(u) {
                 const isVerified = (u === ADMIN_USER);
-                document.getElementById('profName').innerHTML = `@${u} ${isVerified ? '<span class="verified">✔</span>' : ''}`;
-                document.getElementById('profImg').src = this.userCache[u]?.pfp || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u}`;
+                document.getElementById('profName').innerHTML = `@${u} ${isVerified ? '<span class="verified">✔</span>':''}`;
+                
+                // Pega imagem do cache ou gera uma
+                const userData = this.userCache[u];
+                document.getElementById('profImg').src = userData?.pfp || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u}`;
                 
                 const fDoc = await db.collection("follows").doc(u).get();
                 const fData = fDoc.exists ? fDoc.data() : { followers: [], following: [] };
-                document.getElementById('countFollowers').innerText = fData.followers?.length || 0;
-                document.getElementById('countFollowing').innerText = fData.following?.length || 0;
+                document.getElementById('cFol').innerText = fData.followers?.length || 0;
+                document.getElementById('cFlw').innerText = fData.following?.length || 0;
 
                 const isFollowing = this.following.includes(u);
-                document.getElementById('profAction').innerHTML = (u === this.user) ? 
-                    `<button class="btn-blue" onclick="Aura.logout()" style="background:#ff6b6b">Sair</button>` : 
-                    `<button class="btn-blue" onclick="Aura.toggleFollow('${u}')">${isFollowing?'Seguindo':'Seguir'}</button>`;
-
+                document.getElementById('profAction').innerHTML = (u===this.user) ? 
+                `<button class="btn-blue" onclick="Aura.logout()" style="background:#ff6b6b; color:white">Sair</button>` : 
+                `<button class="btn-blue ${isFollowing?'unfollow':''}" onclick="Aura.toggleFollow('${u}')">${isFollowing?'Seguindo':'Seguir'}</button>`;
+                
                 const pSnap = await db.collection("posts").where("u", "==", u).get();
                 this.renderPosts(pSnap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b)=>b.time-a.time), 'profWall');
             },
 
-            renderPosts(list, target) {
-                document.getElementById(target).innerHTML = list.map(p => `
-                    <div class="post">
-                        <div class="post-header">
-                            <div onclick="Aura.go('scrProf', '${p.u}')" style="display:flex; align-items:center; gap:10px; cursor:pointer">
-                                <img src="${this.userCache[p.u]?.pfp || `https://api.dicebear.com/7.x/avataaars/svg?seed=${p.u}`}">
-                                <b>@${p.u} ${p.u === ADMIN_USER ? '<span class="verified">✔</span>' : ''}</b>
-                            </div>
-                        </div>
-                        ${p.img ? `<img src="${p.img}" class="main-img">` : ''}
-                        <div style="padding:15px">
-                            <p>${p.txt}</p>
-                            <div style="margin-top:10px; display:flex; gap:20px; font-size:22px">
-                                <span onclick="Aura.likePost('${p.id}')" style="cursor:pointer">${p.likes?.includes(this.user)?'❤️':'🤍'} <small style="font-size:14px">${p.likes?.length || 0}</small></span>
-                                <span onclick="Aura.openComments('${p.id}')" style="cursor:pointer">💬 <small style="font-size:14px">${p.comments?.length || 0}</small></span>
-                            </div>
-                        </div>
-                    </div>`).join('');
+            async updatePFP(input) {
+                if(!input.files || !input.files[0]) return;
+                const file = input.files[0];
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    const base64 = e.target.result;
+                    await db.collection("users").doc(this.user).set({ pfp: base64 }, { merge: true });
+                    // Atualiza cache local para refletir na hora
+                    this.userCache[this.user].pfp = base64;
+                    this.loadProfile(this.user);
+                };
+                reader.readAsDataURL(file);
             },
 
-            // SISTEMA DE COMENTÁRIOS (POPUP)
-            openComments(postId) {
+            renderPosts(list, target) {
+                const wall = document.getElementById(target);
+                if(!wall) return;
+                wall.innerHTML = list.map(p => {
+                    const isFollowing = this.following.includes(p.u);
+                    const canDelete = (p.u === this.user);
+                    const userPfp = this.userCache[p.u]?.pfp || `https://api.dicebear.com/7.x/avataaars/svg?seed=${p.u}`;
+                    
+                    return `
+                    <div class="post">
+                        ${canDelete ? `<div class="del-post" onclick="Aura.deletePost('${p.id}')">🗑️</div>` : ''}
+                        <div style="padding:12px; display:flex; justify-content:space-between; align-items:center">
+                            <div onclick="Aura.go('scrProf', '${p.u}')" style="display:flex; align-items:center; gap:10px; cursor:pointer">
+                                <img src="${userPfp}" style="width:30px; height:30px; border-radius:50%; object-fit:cover">
+                                <b>@${p.u} ${p.u===ADMIN_USER?'<span class="verified">✔</span>':''}</b>
+                            </div>
+                            ${(p.u !== this.user) ? `<button class="follow-btn ${isFollowing?'unfollow':''}" onclick="Aura.toggleFollow('${p.u}')">${isFollowing?'✓':'Seguir'}</button>` : ''}
+                        </div>
+                        ${p.img ? `<img src="${p.img}" class="post-img">` : ''}
+                        <div style="padding:15px">
+                            <p>${p.txt}</p>
+                            <div style="margin-top:12px; display:flex; gap:15px; align-items:center">
+                                <span onclick="Aura.likePost('${p.id}')" style="cursor:pointer">❤️ ${p.likes?.length||0}</span>
+                                <span onclick="Aura.openComments('${p.id}')" style="cursor:pointer">💬 ${p.comments?.length||0}</span>
+                                <small style="margin-left:auto; color:gray">👁️ ${p.views?.length||0}</small>
+                            </div>
+                        </div>
+                    </div>`;
+                }).join('');
+                list.forEach(p => { if(p.u!==this.user && !p.views?.includes(this.user)) db.collection("posts").doc(p.id).update({views:firebase.firestore.FieldValue.arrayUnion(this.user)}); });
+            },
+
+            async deletePost(id) {
+                if(confirm("Deseja apagar esta publicação?")) {
+                    await db.collection("posts").doc(id).delete();
+                }
+            },
+
+            async openComments(postId) {
                 const post = this.lastPosts.find(p => p.id === postId);
                 document.getElementById('modalTitle').innerText = "Comentários";
-                document.getElementById('commInputArea').style.display = 'block';
+                document.getElementById('commArea').style.display = 'flex';
                 document.getElementById('sendCommBtn').onclick = () => this.addComment(postId);
                 this.drawComments(post);
                 document.getElementById('mainModal').style.display = 'block';
             },
 
             drawComments(post) {
-                document.getElementById('modalBody').innerHTML = (post.comments || []).map((c, i) => `
-                    <div class="comm-item">
-                        <img src="${this.userCache[c.u]?.pfp || `https://api.dicebear.com/7.x/avataaars/svg?seed=${c.u}`}">
-                        <div class="comm-bubble">
+                document.getElementById('modalBody').innerHTML = (post.comments || []).map((c, i) => {
+                    const cPfp = this.userCache[c.u]?.pfp || `https://api.dicebear.com/7.x/avataaars/svg?seed=${c.u}`;
+                    return `
+                    <div style="margin-bottom:12px; background:#0f172a; padding:10px; border-radius:12px; display:flex; gap:10px; align-items:start">
+                        <img src="${cPfp}" style="width:25px; height:25px; border-radius:50%; object-fit:cover">
+                        <div style="flex:1">
                             <b>@${c.u}</b>: ${c.txt}
-                            ${(c.u === this.user || post.u === this.user) ? `<br><span class="comm-del" onclick="Aura.delComment('${post.id}', ${i})">Apagar</span>` : ''}
+                            ${(c.u === this.user || post.u === this.user) ? `<br><small style="color:#ff6b6b; cursor:pointer" onclick="Aura.delComment('${post.id}', ${i})">Apagar</small>` : ''}
                         </div>
                     </div>
-                `).join('') || "Nenhum comentário...";
+                `}).join('') || "Seja o primeiro a comentar!";
             },
 
             async addComment(id) {
                 const txt = document.getElementById('newCommTxt').value;
                 if(!txt) return;
-                await db.collection("posts").doc(id).update({
-                    comments: firebase.firestore.FieldValue.arrayUnion({ u: this.user, txt, time: Date.now() })
-                });
+                await db.collection("posts").doc(id).update({ comments: firebase.firestore.FieldValue.arrayUnion({ u: this.user, txt }) });
                 document.getElementById('newCommTxt').value = "";
-                document.getElementById('mainModal').style.display = 'none';
+                const p = (await db.collection("posts").doc(id).get()).data();
+                this.drawComments({id, ...p});
             },
 
-            async delComment(postId, idx) {
-                if(!confirm("Apagar comentário?")) return;
-                const ref = db.collection("posts").doc(postId);
+            async delComment(id, idx) {
+                const ref = db.collection("posts").doc(id);
                 const p = (await ref.get()).data();
                 p.comments.splice(idx, 1);
                 await ref.update({ comments: p.comments });
-                document.getElementById('mainModal').style.display = 'none';
+                this.drawComments({id, ...p});
             },
 
-            // SEGUIDORES/SEGUINDO (POPUP)
             async showSocial(type) {
                 const u = document.getElementById('profName').innerText.split(' ')[0].replace('@','');
                 const doc = await db.collection("follows").doc(u).get();
                 const list = doc.exists ? (doc.data()[type] || []) : [];
-                document.getElementById('modalTitle').innerText = type === 'followers' ? 'Seguidores' : 'Seguindo';
-                document.getElementById('commInputArea').style.display = 'none';
-                document.getElementById('modalBody').innerHTML = list.map(name => `
-                    <div style="display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--border)" onclick="Aura.go('scrProf', '${name}'); document.getElementById('mainModal').style.display='none'">
-                        <img src="${this.userCache[name]?.pfp || `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`}" style="width:35px; height:35px; border-radius:50%">
+                document.getElementById('modalTitle').innerText = type==='followers'?'Seguidores':'Seguindo';
+                document.getElementById('commArea').style.display = 'none';
+                document.getElementById('modalBody').innerHTML = list.map(name => {
+                    const sPfp = this.userCache[name]?.pfp || `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`;
+                    return `
+                    <div style="display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--border)" onclick="Aura.go('scrProf', '${name}'); document.getElementById('mainModal').style.display='none'">
+                        <img src="${sPfp}" style="width:35px; height:35px; border-radius:50%; object-fit:cover">
                         <b>@${name}</b>
                     </div>
-                `).join('') || "Lista vazia.";
+                `}).join('') || "Ninguém por aqui";
                 document.getElementById('mainModal').style.display = 'block';
             },
 
@@ -298,18 +342,22 @@
                 const txt = document.getElementById('pTxt').value;
                 const file = document.getElementById('pFile').files[0];
                 if(!txt && !file) return;
+
                 const send = async (img) => {
-                    await db.collection("posts").add({ u: this.user, txt, img: img || "", likes: [], comments: [], time: Date.now() });
+                    await db.collection("posts").add({ u: this.user, txt, img: img || "", likes: [], views: [], comments: [], time: Date.now() });
                     document.getElementById('pTxt').value = "";
+                    document.getElementById('pFile').value = "";
                 };
-                if(file) { const r = new FileReader(); r.onload = e => send(e.target.result); r.readAsDataURL(file); } else send(null);
+
+                if(file) {
+                    const r = new FileReader();
+                    r.onload = e => send(e.target.result);
+                    r.readAsDataURL(file);
+                } else {
+                    send(null);
+                }
             },
 
-            async updatePFP(input) {
-                const r = new FileReader();
-                r.onload = async (e) => { await db.collection("users").doc(this.user).set({ pfp: e.target.result }, {merge:true}); location.reload(); };
-                r.readAsDataURL(input.files[0]);
-            },
             logout() { localStorage.clear(); location.reload(); }
         };
         Aura.init();
