@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AURA ULTRA</title>
+    <style>
+        :root { --bg: #000000; --card: #121212; --text: #ffffff; --accent: #0095f6; --border: #262626; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; }
+        
+        body { background: var(--bg); color: var(--text); padding-bottom: 80px; }
+        header { background: var(--bg); padding: 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; position: sticky; top: 0; z-index: 99; }
+        
+        .screen { display: none; padding: 15px; max-width: 500px; margin: auto; }
+        .active { display: block !important; }
+        
+        .card { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 15px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid var(--border); border-radius: 8px; background: #262626; color: #fff; outline: none; }
+        
+        .btn { width: 100%; padding: 12px; background: var(--accent); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .btn-link { background: none; color: var(--accent); margin-top: 10px; font-size: 14px; }
+
+        .post { background: var(--card); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 20px; }
+        .post-header { padding: 12px; font-weight: bold; color: var(--accent); }
+        .post img { width: 100%; display: block; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+        .post-info { padding: 12px; }
+        .post-actions { padding: 10px 12px; border-top: 1px solid var(--border); display: flex; gap: 20px; }
+
+        nav { position: fixed; bottom: 0; width: 100%; background: #000; border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 15px 0; }
+        .nav-item { font-size: 24px; cursor: pointer; opacity: 0.5; }
+        .nav-item.active-nav { opacity: 1; color: var(--accent); }
+
+        #preview { width: 100%; border-radius: 8px; margin-top: 10px; display: none; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h2>Aura</h2>
+        <div id="loggedUser" style="font-size: 12px; color: #888;"></div>
+    </header>
+
+    <div id="scrAuth" class="screen active">
+        <div class="card">
+            <h1 id="authTitle">Entrar</h1>
+            <input type="text" id="uInp" placeholder="Usuário">
+            <input type="password" id="pInp" placeholder="Senha">
+            <button class="btn" id="btnMain">Entrar</button>
+            <button class="btn btn-link" id="btnSwap">Não tem conta? Cadastre-se</button>
+        </div>
+    </div>
+
+    <div id="scrFeed" class="screen">
+        <div class="card">
+            <input type="text" id="postTxt" placeholder="O que você está pensando?">
+            <input type="file" id="postFile" accept="image/*">
+            <img id="preview">
+            <button class="btn" id="btnPost" style="margin-top:10px">Publicar</button>
+        </div>
+        <div id="feedWall"></div>
+    </div>
+
+    <div id="scrProfile" class="screen">
+        <div class="card" style="text-align: center;">
+            <h2 id="profTitle">@usuario</h2>
+            <button class="btn" id="btnLogout" style="background:#ff4444; margin-top:15px">Sair</button>
+        </div>
+        <div id="profileWall"></div>
+    </div>
+
+    <nav id="menu" style="display:none">
+        <div class="nav-item active-nav" id="navHome">🏠</div>
+        <div class="nav-item" id="navProfile">👤</div>
+    </nav>
+
+    <script>
+        // SISTEMA ULTRA CORE
+        const Aura = {
+            user: localStorage.getItem('aura_session'),
+            mode: 'login',
+
+            init() {
+                // Eventos de Botão (Método Forte)
+                document.getElementById('btnMain').onclick = () => this.handleAuth();
+                document.getElementById('btnSwap').onclick = () => this.swapAuth();
+                document.getElementById('btnPost').onclick = () => this.createPost();
+                document.getElementById('btnLogout').onclick = () => this.logout();
+                document.getElementById('navHome').onclick = () => this.goto('scrFeed');
+                document.getElementById('navProfile').onclick = () => this.goto('scrProfile');
+                
+                document.getElementById('postFile').onchange = (e) => {
+                    const r = new FileReader();
+                    r.onload = ev => { 
+                        document.getElementById('preview').src = ev.target.result;
+                        document.getElementById('preview').style.display = 'block';
+                    };
+                    r.readAsDataURL(e.target.files[0]);
+                };
+
+                if(this.user) this.loadApp();
+            },
+
+            swapAuth() {
+                this.mode = (this.mode === 'login') ? 'reg' : 'login';
+                document.getElementById('authTitle').innerText = (this.mode === 'login') ? 'Entrar' : 'Criar Conta';
+                document.getElementById('btnMain').innerText = (this.mode === 'login') ? 'Entrar' : 'Cadastrar';
+            },
+
+            handleAuth() {
+                const u = document.getElementById('uInp').value.trim();
+                const p = document.getElementById('pInp').value.trim();
+                if(!u || !p) return alert("Preencha tudo!");
+
+                let db = JSON.parse(localStorage.getItem('aura_db_users') || "[]");
+
+                if(this.mode === 'reg') {
+                    if(db.find(x => x.u === u)) return alert("Já existe!");
+                    db.push({u, p});
+                    localStorage.setItem('aura_db_users', JSON.stringify(db));
+                    alert("Sucesso! Faça login.");
+                    this.swapAuth();
+                } else {
+                    if(db.find(x => x.u === u && x.p === p)) {
+                        this.user = u;
+                        localStorage.setItem('aura_session', u);
+                        this.loadApp();
+                    } else alert("Erro nos dados!");
+                }
+            },
+
+            loadApp() {
+                document.getElementById('scrAuth').classList.remove('active');
+                document.getElementById('menu').style.display = 'flex';
+                document.getElementById('loggedUser').innerText = "@" + this.user;
+                this.goto('scrFeed');
+            },
+
+            goto(id) {
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active-nav'));
+                document.getElementById(id).classList.add('active');
+                
+                if(id === 'scrFeed') {
+                    document.getElementById('navHome').classList.add('active-nav');
+                    this.render('feedWall', null);
+                } else {
+                    document.getElementById('navProfile').classList.add('active-nav');
+                    this.render('profileWall', this.user);
+                }
+            },
+
+            createPost() {
+                const txt = document.getElementById('postTxt').value;
+                const file = document.getElementById('postFile').files[0];
+                if(!txt && !file) return alert("Nada para postar!");
+
+                const save = (img) => {
+                    let posts = JSON.parse(localStorage.getItem('aura_db_posts') || "[]");
+                    posts.unshift({ id: Date.now(), u: this.user, txt, img, likes: [] });
+                    localStorage.setItem('aura_db_posts', JSON.stringify(posts));
+                    
+                    document.getElementById('postTxt').value = "";
+                    document.getElementById('postFile').value = "";
+                    document.getElementById('preview').style.display = 'none';
+                    this.goto('scrFeed');
+                };
+
+                if(file) {
+                    const r = new FileReader();
+                    r.onload = e => save(e.target.result);
+                    r.readAsDataURL(file);
+                } else save(null);
+            },
+
+            render(containerId, filter) {
+                const posts = JSON.parse(localStorage.getItem('aura_db_posts') || "[]");
+                const div = document.getElementById(containerId);
+                const list = filter ? posts.filter(p => p.u === filter) : posts;
+
+                if(filter) document.getElementById('profTitle').innerText = "@" + filter;
+
+                div.innerHTML = list.map(p => `
+                    <div class="post">
+                        <div class="post-header">@${p.u}</div>
+                        ${p.img ? `<img src="${p.img}">` : ''}
+                        <div class="post-info">${p.txt}</div>
+                        <div class="post-actions">
+                            <span onclick="Aura.like(${p.id})">❤️ ${p.likes.length}</span>
+                        </div>
+                    </div>
+                `).join('');
+            },
+
+            like(id) {
+                let posts = JSON.parse(localStorage.getItem('aura_db_posts'));
+                let p = posts.find(x => x.id == id);
+                if(!p.likes.includes(this.user)) p.likes.push(this.user);
+                else p.likes = p.likes.filter(u => u !== this.user);
+                localStorage.setItem('aura_db_posts', JSON.stringify(posts));
+                this.render(this.user ? 'profileWall' : 'feedWall', document.getElementById('scrProfile').classList.contains('active') ? this.user : null);
+            },
+
+            logout() {
+                localStorage.removeItem('aura_session');
+                location.reload();
+            }
+        };
+
+        // Iniciar sistema
+        Aura.init();
+    </script>
+</body>
+</html>
