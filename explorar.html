@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aura - Explorar</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <style>
+        :root { --bg: #0f172a; --card: #1e293b; --text: #f1f5f9; --accent: #89cff0; --border: #334155; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { background: var(--bg); color: var(--text); padding: 15px; padding-bottom: 80px; }
+        
+        .search-box { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border); background: var(--card); color: white; margin-bottom: 20px; outline: none; }
+        
+        .user-card { background: var(--card); padding: 12px; border-radius: 15px; border: 1px solid var(--border); display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+        .user-card img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent); }
+        .user-info { flex: 1; }
+        .user-info b { display: block; font-size: 14px; }
+        .user-info small { color: #94a3b8; font-size: 11px; }
+
+        .btn-follow { padding: 6px 15px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; font-size: 12px; }
+        .follow { background: var(--accent); color: #0f172a; }
+        .unfollow { background: #334155; color: white; }
+        
+        .back-btn { background: none; border: none; color: var(--accent); cursor: pointer; margin-bottom: 15px; display: block; }
+        .verified { color: #38bdf8; margin-left: 4px; }
+    </style>
+</head>
+<body>
+
+    <button class="back-btn" onclick="window.location.href='index.html'">⬅ Voltar</button>
+    
+    <input type="text" id="searchInp" class="search-box" placeholder="Procurar usuário..." oninput="filtrarUsuarios()">
+    
+    <div id="userList">Carregando pessoas...</div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyASdswQJmfCG_7MVwbwudHFpx-4zwv6jtg",
+            authDomain: "aura-4d3aa.firebaseapp.com",
+            projectId: "aura-4d3aa",
+            storageBucket: "aura-4d3aa.firebasestorage.app",
+            messagingSenderId: "253146544636",
+            appId: "1:253146544636:web:9d677c28faddf1d7315a79"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        const meuUsuario = localStorage.getItem('aura_user');
+        let todosUsuarios = [];
+        let seguindo = [];
+
+        // Função de tempo (igual a do index)
+        function tempoAtras(t) {
+            if(!t) return "nunca";
+            const s = Math.floor((Date.now() - t)/1000);
+            if(s < 60) return "online";
+            if(s < 3600) return Math.floor(s/60)+"m";
+            if(s < 86400) return Math.floor(s/3600)+"h";
+            return Math.floor(s/86400)+"d";
+        }
+
+        async function initExplorar() {
+            // Pegar quem eu já sigo
+            const fDoc = await db.collection("follows").doc(meuUsuario).get();
+            if(fDoc.exists) seguindo = fDoc.data().following || [];
+
+            // Escutar todos os usuários
+            db.collection("users").onSnapshot(snap => {
+                todosUsuarios = snap.docs.map(doc => ({id: doc.id, ...doc.data()}));
+                renderizar(todosUsuarios);
+            });
+            
+            // Atualizar meu online
+            db.collection("users").doc(meuUsuario).update({ lastSeen: Date.now() });
+        }
+
+        function renderizar(lista) {
+            const container = document.getElementById('userList');
+            container.innerHTML = "";
+
+            lista.forEach(u => {
+                if(u.id === meuUsuario) return; // Não mostra você mesmo
+
+                const isFollowing = seguindo.includes(u.id);
+                const pfp = u.pfp || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.id}`;
+                const visto = tempoAtras(u.lastSeen);
+
+                container.innerHTML += `
+                    <div class="user-card">
+                        <img src="${pfp}" onclick="verPerfil('${u.id}')" style="cursor:pointer">
+                        <div class="user-info" onclick="verPerfil('${u.id}')" style="cursor:pointer">
+                            <b>@${u.id} ${u.id === 'luis' ? '<span class="verified">✔</span>' : ''}</b>
+                            <small>Visto há: ${visto}</small>
+                        </div>
+                        <button id="btn-${u.id}" class="btn-follow ${isFollowing ? 'unfollow' : 'follow'}" 
+                            onclick="toggleFollow('${u.id}')">
+                            ${isFollowing ? '✓' : 'Seguir'}
+                        </button>
+                    </div>
+                `;
+            });
+        }
+
+        function filtrarUsuarios() {
+            const termo = document.getElementById('searchInp').value.toLowerCase();
+            const filtrados = todosUsuarios.filter(u => u.id.toLowerCase().includes(termo));
+            renderizar(filtrados);
+        }
+
+        async function toggleFollow(targetU) {
+            const btn = document.getElementById(`btn-${targetU}`);
+            const myRef = db.collection("follows").doc(meuUsuario);
+            const tRef = db.collection("follows").doc(targetU);
+
+            if (seguindo.includes(targetU)) {
+                // Parar de seguir
+                seguindo = seguindo.filter(x => x !== targetU);
+                await myRef.update({ following: firebase.firestore.FieldValue.arrayRemove(targetU) });
+                await tRef.set({ followers: firebase.firestore.FieldValue.arrayRemove(meuUsuario) }, {merge:true});
+            } else {
+                // Seguir
+                seguindo.push(targetU);
+                await myRef.set({ following: firebase.firestore.FieldValue.arrayUnion(targetU) }, {merge:true});
+                await tRef.set({ followers: firebase.firestore.FieldValue.arrayUnion(meuUsuario) }, {merge:true});
+            }
+            renderizar(todosUsuarios);
+        }
+
+        function verPerfil(u) {
+            localStorage.setItem('ver_perfil', u);
+            window.location.href = 'index.html';
+        }
+
+        initExplorar();
+    </script>
+</body>
+</html>
