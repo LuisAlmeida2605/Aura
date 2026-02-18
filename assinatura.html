@@ -45,10 +45,59 @@
             display: block;
         }
 
-        .btn-gold { background: var(--gold); color: #000; border: none; padding: 15px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .btn-whatsapp { background: #25d366; color: white; border: none; padding: 12px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; display: block; text-decoration: none; }
+        .btn-gold { 
+            background: var(--gold); 
+            color: #000; 
+            border: none; 
+            padding: 15px; 
+            width: 100%; 
+            border-radius: 12px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            margin-top: 10px; 
+        }
+
+        /* AJUSTE DO DISCORD */
+        .nav-item {
+            margin-top: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .discord-btn {
+            background-color: #5865F2;
+            width: 50px; /* Tamanho fixo para não explodir */
+            height: 50px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 4px 10px rgba(88, 101, 242, 0.3);
+        }
+
+        .discord-btn:hover {
+            border-radius: 12px;
+            background-color: #4752c4;
+            transform: scale(1.1);
+        }
+
+        .discord-btn img {
+            width: 30px;
+            filter: brightness(0) invert(1);
+        }
+
+        .nav-text {
+            font-size: 12px;
+            color: #94a3b8;
+            font-weight: bold;
+        }
         
-        .back-link { display: block; margin-top: 25px; color: var(--accent); text-decoration: none; font-size: 14px; }
+        .back-link { display: block; margin-top: 15px; color: var(--accent); text-decoration: none; font-size: 14px; }
     </style>
 </head>
 <body>
@@ -72,26 +121,21 @@
             <button class="btn-gold" onclick="copiarPix()">Copiar Código Pix 📋</button>
         </div>
 
-        <a href="https://wa.me/71993707660?text=Olá! Acabei de pagar o Aura Prime. Meu usuário é: " id="wppBtn" class="btn-whatsapp" target="_blank">
-            Enviar Comprovante (WhatsApp) ✅
-        </a>
+        <div class="nav-item">
+            <div onclick="window.open('https://discord.gg/f93XumN3fp', '_blank')" class="discord-btn">
+                <img src="https://cdn-icons-png.flaticon.com/512/3670/3670157.png" alt="Discord">
+            </div>
+            <span class="nav-text">Enviar Comprovante Discord</span>
+        </div>
+
+        <a href="index.html" class="back-link">⬅ Voltar para a Aura</a>
     </div>
 
-    <a href="index.html" class="back-link">⬅ Voltar para a Aura</a>
-
     <script>
-        const user = localStorage.getItem('aura_user');
-        
-        // Atualiza o link do WhatsApp com o nome do usuário logado
-        if(user) {
-            const btn = document.getElementById('wppBtn');
-            btn.href += user;
-        }
-
         function copiarPix() {
             const code = document.getElementById('pixCod').innerText;
             navigator.clipboard.writeText(code);
-            alert("Código Pix copiado! Agora abra o app do seu banco e pague na opção 'Pix Copia e Cola'.");
+            alert("Código Pix copiado! Pague no seu banco para ativar o Prime.");
         }
     </script>
 </body>
