@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aura - Assinar Prime 🌟</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <style>
+        :root { --bg: #0f172a; --card: #1e293b; --text: #f1f5f9; --gold: #ffd700; --accent: #89cff0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { background: var(--bg); color: var(--text); padding: 20px; text-align: center; }
+        
+        .prime-card { 
+            background: linear-gradient(145deg, #1e293b, #0f172a); 
+            border: 2px solid var(--gold); 
+            padding: 30px; 
+            border-radius: 25px; 
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.2); 
+            max-width: 450px; 
+            margin: 20px auto; 
+        }
+
+        .price { font-size: 32px; font-weight: bold; color: var(--gold); margin: 15px 0; }
+        
+        .benefits { text-align: left; margin: 20px 0; list-style: none; }
+        .benefits li { margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 15px; }
+
+        .pix-area { 
+            background: rgba(255, 255, 255, 0.05); 
+            padding: 15px; 
+            border-radius: 12px; 
+            border: 1px dashed var(--gold); 
+            margin-top: 20px; 
+        }
+
+        .pix-code { 
+            font-size: 10px; 
+            word-break: break-all; 
+            color: #94a3b8; 
+            background: #000; 
+            padding: 10px; 
+            border-radius: 8px; 
+            margin: 10px 0; 
+            display: block;
+        }
+
+        .btn-gold { background: var(--gold); color: #000; border: none; padding: 15px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-whatsapp { background: #25d366; color: white; border: none; padding: 12px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; display: block; text-decoration: none; }
+        
+        .back-link { display: block; margin-top: 25px; color: var(--accent); text-decoration: none; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <div class="prime-card">
+        <h1 style="color: var(--gold)">Aura Prime 🌟</h1>
+        <p style="color: #94a3b8;">Sua experiência em outro nível</p>
+        
+        <div class="price">R$ 4,90 <span style="font-size: 14px; color: white;">/mês</span></div>
+
+        <ul class="benefits">
+            <li>✨ Borda Dourada em todos os seus posts</li>
+            <li>🌟 Símbolo de Estrela exclusivo no nome</li>
+            <li>💬 Comentários com destaque dourado</li>
+            <li>🖼️ Foto de perfil com borda VIP em todo o app</li>
+        </ul>
+
+        <div class="pix-area">
+            <p style="font-size: 14px; font-weight: bold;">Pagamento via PIX</p>
+            <span class="pix-code" id="pixCod">00020126480014br.gov.bcb.pix0111049938005330211Prime 30mes52040000530398654044.905802BR5923GILCELMA REIS DOS ANJOS6012SIMOES FILHO62580520SAN2026021802030686250300017br.gov.bcb.brcode01051.0.0630473D0</span>
+            <button class="btn-gold" onclick="copiarPix()">Copiar Código Pix 📋</button>
+        </div>
+
+        <a href="https://wa.me/SEU_NUMERO_AQUI?text=Olá! Acabei de pagar o Aura Prime. Meu usuário é: " id="wppBtn" class="btn-whatsapp" target="_blank">
+            Enviar Comprovante (WhatsApp) ✅
+        </a>
+    </div>
+
+    <a href="index.html" class="back-link">⬅ Voltar para a Aura</a>
+
+    <script>
+        const user = localStorage.getItem('aura_user');
+        
+        // Atualiza o link do WhatsApp com o nome do usuário logado
+        if(user) {
+            const btn = document.getElementById('wppBtn');
+            btn.href += user;
+        }
+
+        function copiarPix() {
+            const code = document.getElementById('pixCod').innerText;
+            navigator.clipboard.writeText(code);
+            alert("Código Pix copiado! Agora abra o app do seu banco e pague na opção 'Pix Copia e Cola'.");
+        }
+    </script>
+</body>
+</html>

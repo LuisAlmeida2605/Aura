@@ -6,7 +6,9 @@
     <title>Aura - Edição Final</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="script.js"></script>
     <style>
+
         :root { --bg: #0f172a; --card: #1e293b; --text: #f1f5f9; --accent: #89cff0; --border: #334155; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; transition: 0.2s; }
         body { background: var(--bg); color: var(--text); padding-bottom: 90px; }
@@ -95,6 +97,22 @@
             <img id="profImg" style="width:100px; height:100px; border-radius:50%; border:3px solid var(--accent); margin-bottom:10px; cursor:pointer; object-fit:cover" onclick="document.getElementById('pfpFile').click()">
             <input type="file" id="pfpFile" style="display:none" accept="image/*" onchange="Aura.updatePFP(this)">
             
+            <div id="scrPrime" class="screen">
+    <div class="card" style="text-align:center; border: 2px solid var(--gold); background: linear-gradient(145deg, #1e293b, #0f172a);">
+        <h1 style="color: var(--gold); margin-bottom: 15px;">Aura Prime 🌟</h1>
+        <p style="margin-bottom: 20px;">Ganhe destaque total na rede com bordas douradas e selo exclusivo!</p>
+        
+        <ul style="text-align: left; margin-bottom: 20px; list-style: none; padding-left: 10px;">
+            <li style="margin-bottom: 10px;">✨ Selo 🌟 no nome</li>
+            <li style="margin-bottom: 10px;">✨ Borda dourada em todos os posts</li>
+            <li style="margin-bottom: 10px;">✨ Prioridade no feed</li>
+        </ul>
+
+        <button class="btn-prime" onclick="Aura.ativarPrime()">Ativar Agora (Grátis)</button>
+        <button class="btn-blue" onclick="Aura.go('scrFeed')" style="background: transparent; color: white; border: 1px solid var(--border); margin-top: 10px;">Depois</button>
+    </div>
+</div>
+            
             <h2 id="profName"></h2>
             <div style="display:flex; justify-content: space-around; margin: 15px 0; background: #0f172a; padding: 10px; border-radius: 15px;">
                 <div onclick="Aura.showSocial('followers')" style="cursor:pointer">Seguidores<br><b id="cFol">0</b></div>
@@ -120,6 +138,7 @@
         <div class="nav-item" onclick="Aura.go('scrFeed')">🏠</div>
         <div class="nav-item" onclick="window.location.href='explorar.html'">🧭</div>
         <div class="nav-item" onclick="Aura.go('scrProf', Aura.user)">👤</div>
+        <div class="nav-item" onclick="window.location.href='assinatura.html'">🌟</div>
     </nav>
 
     <script>
@@ -333,35 +352,4 @@
 
             async likePost(id) {
                 const ref = db.collection("posts").doc(id);
-                const doc = await ref.get();
-                let l = doc.data().likes || [];
-                l.includes(this.user) ? l = l.filter(u => u !== this.user) : l.push(this.user);
-                await ref.update({ likes: l });
-            },
-
-            async newPost() {
-                const txt = document.getElementById('pTxt').value;
-                const file = document.getElementById('pFile').files[0];
-                if(!txt && !file) return;
-
-                const send = async (img) => {
-                    await db.collection("posts").add({ u: this.user, txt, img: img || "", likes: [], views: [], comments: [], time: Date.now() });
-                    document.getElementById('pTxt').value = "";
-                    document.getElementById('pFile').value = "";
-                };
-
-                if(file) {
-                    const r = new FileReader();
-                    r.onload = e => send(e.target.result);
-                    r.readAsDataURL(file);
-                } else {
-                    send(null);
-                }
-            },
-
-            logout() { localStorage.clear(); location.reload(); }
-        };
-        Aura.init();
-    </script>
-</body>
-</html>
+  
