@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aura - Chat</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <style>
+        :root { --bg: #0f172a; --card: #1e293b; --accent: #89cff0; --border: #334155; }
+        body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; }
+        .header { padding: 15px; background: var(--card); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 15px; }
+        .header a { color: var(--accent); text-decoration: none; font-size: 28px; line-height: 1; }
+        .header img { width: 35px; height: 35px; border-radius: 50%; background: #0f172a; }
+        
+        #box { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; background: #0b1120; }
+        .msg { max-width: 75%; padding: 12px 16px; border-radius: 20px; font-size: 15px; line-height: 1.4; position: relative; }
+        .me { align-self: flex-end; background: var(--accent); color: #0f172a; border-bottom-right-radius: 4px; }
+        .he { align-self: flex-start; background: var(--card); color: white; border-bottom-left-radius: 4px; }
+
+        .input-bar { padding: 15px; background: var(--card); display: flex; gap: 10px; align-items: center; }
+        input { flex: 1; background: var(--bg); border: 1px solid var(--border); color: white; padding: 14px 20px; border-radius: 30px; outline: none; font-size: 15px; }
+        button { background: var(--accent); border: none; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 22px; transition: 0.2s; }
+        button:active { transform: scale(0.9); }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="mensagens.html">‹</a>
+        <img id="userImg" src="">
+        <b id="userName">Carregando...</b>
+    </div>
+
+    <div id="box"></div>
+
+    <div class="input-bar">
+        <input type="text" id="msgInp" placeholder="Escreva uma mensagem..." onkeypress="if(event.key==='Enter')enviar()">
+        <button onclick="enviar()">➤</button>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyASdswQJmfCG_7MVwbwudHFpx-4zwv6jtg",
+            authDomain: "aura-4d3aa.firebaseapp.com",
+            projectId: "aura-4d3aa",
+            storageBucket: "aura-4d3aa.firebasestorage.app",
+            messagingSenderId: "253146544636",
+            appId: "1:253146544636:web:9d677c28faddf1d7315a79"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        const meuUser = localStorage.getItem('aura_user');
+        const params = new URLSearchParams(window.location.search);
+        const outroUser = params.get('u');
+        
+        if (!meuUser || !outroUser) window.location.href = 'mensagens.html';
+
+        document.getElementById('userName').innerText = "@" + outroUser;
+        document.getElementById('userImg').src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${outroUser}`;
+        
+        const chatId = [meuUser, outroUser].sort().join('_');
+
+        // Escutar mensagens em tempo real
+        db.collection('chats').doc(chatId).collection('messages')
+            .orderBy('time', 'asc')
+            .onSnapshot(snap => {
+                const box = document.getElementById('box');
+                box.innerHTML = snap.docs.map(doc => {
+                    const m = doc.data();
+                    return `<div class="msg ${m.u === meuUser ? 'me' : 'he'}">${m.txt}</div>`;
+                }).join('');
+                box.scrollTop = box.scrollHeight;
+            });
+
+        async function enviar() {
+            const inp = document.getElementById('msgInp');
+            const texto = inp.value.trim();
+            if (!texto) return;
+
+            inp.value = "";
+            const msgData = { u: meuUser, txt: texto, time: Date.now() };
+
+            await db.collection('chats').doc(chatId).collection('messages').add(msgData);
+            await db.collection('chats').doc(chatId).set({ lastUpdate: Date.now() }, { merge: true });
+        }
+    </script>
+</body>
+</html>

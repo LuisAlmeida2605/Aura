@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aura - Mensagens</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <style>
+        :root { --fundo: #0f172a; --card: #1e293b; --destaque: #89cff0; --borda: #334155; }
+        body { background: var(--fundo); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; }
+        .topo { padding: 20px; background: var(--card); border-bottom: 1px solid var(--borda); display: flex; align-items: center; gap: 15px; position: sticky; top: 0; z-index: 10; }
+        .topo a { color: var(--destaque); text-decoration: none; font-size: 24px; }
+        .lista { padding: 15px; }
+        .contato-item { display: flex; align-items: center; gap: 15px; padding: 15px; background: var(--card); border-radius: 15px; margin-bottom: 10px; cursor: pointer; border: 1px solid transparent; }
+        .contato-item:hover { border-color: var(--destaque); }
+        .contato-item img { width: 50px; height: 50px; border-radius: 50%; background: #0f172a; }
+        .info b { color: var(--destaque); display: block; }
+    </style>
+</head>
+<body>
+
+    <div class="topo">
+        <a href="index.html">←</a>
+        <b>Conversas</b>
+    </div>
+
+    <div id="listaContatos" class="lista">
+        <p style="text-align:center; color:gray;">Carregando usuários...</p>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyASdswQJmfCG_7MVwbwudHFpx-4zwv6jtg",
+            authDomain: "aura-4d3aa.firebaseapp.com",
+            projectId: "aura-4d3aa",
+            storageBucket: "aura-4d3aa.firebasestorage.app",
+            messagingSenderId: "253146544636",
+            appId: "1:253146544636:web:9d677c28faddf1d7315a79"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const meuUser = localStorage.getItem('aura_user');
+
+        async function carregarUsuarios() {
+            if (!meuUser) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            const listaDiv = document.getElementById('listaContatos');
+
+            // USANDO A COLEÇÃO 'users' (A mesma que deve estar no seu index)
+            db.collection('users').onSnapshot(snap => {
+                listaDiv.innerHTML = "";
+                
+                snap.forEach(doc => {
+                    const usuario = doc.id; // ou doc.data().username
+
+                    // Não mostrar a si mesmo na lista de mensagens
+                    if (usuario !== meuUser) {
+                        const div = document.createElement('div');
+                        div.className = 'contato-item';
+                        div.onclick = () => window.location.href = `chat.html?u=${usuario}`;
+                        div.innerHTML = `
+                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${usuario}">
+                            <div class="info">
+                                <b>@${usuario}</b>
+                                <span style="font-size:12px; color:gray;">Clique para conversar</span>
+                            </div>
+                        `;
+                        listaDiv.appendChild(div);
+                    }
+                });
+
+                if (listaDiv.innerHTML === "") {
+                    listaDiv.innerHTML = "<p style='text-align:center'>Nenhum usuário encontrado.</p>";
+                }
+            });
+        }
+
+        carregarUsuarios();
+    </script>
+</body>
+</html>
